@@ -6,6 +6,9 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"go.pyspa.org/brbundle/brhttp"
 	"go.pyspa.org/brbundle/websupport"
@@ -26,8 +29,10 @@ func init() {
 func main() {
 	addr := ":8080"
 	css := ""
+	script := ""
 	flag.StringVar(&addr, "l", ":8080", "listen address")
 	flag.StringVar(&css, "css", "", "custom css file")
+	flag.StringVar(&script, "js", "", "custom script file")
 	flag.Parse()
 	if flag.NArg() < 1 {
 		flag.Usage()
@@ -35,6 +40,10 @@ func main() {
 	}
 	mdfile := flag.Arg(0)
 	log.Println("target markdown-file:", mdfile)
+	pwd, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
 	l, err := net.Listen("tcp", addr)
 	if err != nil {
 		log.Fatal(err)
@@ -47,10 +56,21 @@ func main() {
 			http.ServeFile(w, r, css)
 		})
 	}
+	if len(script) > 0 {
+		http.HandleFunc("/user.js", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, script)
+		})
+	}
 	http.HandleFunc("/content.md", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, mdfile)
 	})
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		p := filepath.Join(pwd, strings.TrimLeft(r.URL.Path, "/"))
+		_, err := os.Stat(p)
+		if os.IsExist(err) {
+			http.ServeFile(w, r, p)
+			return
+		}
 		_, found, _ := websupport.FindFile(r.URL.Path, option)
 		if found {
 			brfs.ServeHTTP(w, r)
