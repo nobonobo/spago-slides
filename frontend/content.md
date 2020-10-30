@@ -1,42 +1,12 @@
-<div class="centering">
-
-{.title}
-
-# SpaGo で SPA を作ろう！
-
-## nobonobo
-
-</div>
+# Title2
 
 ====
 
-<div class="centering">
+# Next Page
 
-# 参照リポジトリ
-
-- http://github.com/nobonobo/spago
-- http://github.com/nobonobo/spago-spectre
-- http://github.com/nobonobo/spago-slides
-
-</div>
+<li class="fragment">Item1</li>
+<li class="fragment">Item2</li>
 
 ====
 
-# セットアップ
-
-```shell
-> go get github.com/nobonobo/spago/cmd/spago
-> spago
-Usage of spago:
-  commands:
-    new		component scafold
-    generate	html to go for spago code generator
-    server	development http server
-    deploy	deploy static files
-```
-
-# これだけで始められます。
-
-これだけで始められます。
-
-====
+# Last Page

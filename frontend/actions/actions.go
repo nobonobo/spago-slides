@@ -9,4 +9,6 @@ const (
 	NextStep
 	// PrevStep ...
 	PrevStep
+	// ReLoad ...
+	ReLoad
 )

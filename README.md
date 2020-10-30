@@ -18,9 +18,17 @@ content.md
 ====
 
 # Next Page
+
+<li class="fragment">Item1</li>
+<li class="fragment">Item2</li>
+
+====
+
+# Last Page
 ```
 
-`====` is 　 page separator.
+- `====`: page separator.
+- class="fragment": not visible at first.
 
 ## Step3. execute server
 
@@ -38,8 +46,12 @@ open htttp://localhost:8080
 
 key map
 
-- Arrow Right(▶️buttton click): appear fragments or move to next page.
-- Arrow Left(◀️buttton click): move to prev page.
+- Arrow Right(▶️buttton click):
+  If the slide has fragments, they will be displayed, otherwise the slide move to next page.
+- Arrow Left(◀️buttton click):
+  the slide move to prev page.
+- `R` key:
+  reload content.md
 
 ## Step extra.
 

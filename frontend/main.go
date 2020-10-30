@@ -100,11 +100,13 @@ func nextAction(args ...interface{}) {
 
 func keyHandler(ev js.Value) {
 	console.Call("log", ev)
-	switch ev.Get("key").String() {
+	switch ev.Get("code").String() {
 	case "ArrowLeft":
 		prevAction()
 	case "ArrowRight":
 		nextAction()
+	case "KeyR":
+		go dispatcher.Dispatch(actions.ReLoad)
 	}
 }
 
@@ -120,7 +122,7 @@ func getCurrentPage() int {
 	return page
 }
 
-func main() {
+func loadContent() []spago.Component {
 	resp, err := jsutil.Fetch(time.Now().Format("/content.md?20060102-150405"), nil)
 	if err != nil {
 		log.Print(err)
@@ -129,13 +131,22 @@ func main() {
 	if err != nil {
 		log.Print(err)
 	}
+	return parseMarkdown(content.String())
+}
+
+func main() {
 	top := &slide.Slides{
-		Slides: parseMarkdown(content.String()),
+		Slides: loadContent(),
 	}
 	maxPage = len(top.Slides)
 	spago.RenderBody(top)
 	dispatcher.Register(actions.PrevStep, prevAction)
 	dispatcher.Register(actions.NextStep, nextAction)
+	dispatcher.Register(actions.ReLoad, func(args ...interface{}) {
+		log.Println("reloading...")
+		top.Slides = loadContent()
+		spago.Rerender(top)
+	})
 	currentPage = getCurrentPage()
 	location.Set("hash", "")
 	setCurrentPage(currentPage)
