@@ -145,7 +145,7 @@ func main() {
 	dispatcher.Register(actions.ReLoad, func(args ...interface{}) {
 		log.Println("reloading...")
 		top.Slides = loadContent()
-		spago.Rerender(top)
+		spago.RenderBody(top)
 	})
 	currentPage = getCurrentPage()
 	location.Set("hash", "")
