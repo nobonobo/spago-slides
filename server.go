@@ -30,9 +30,11 @@ func main() {
 	addr := ":8080"
 	css := ""
 	script := ""
+	module := ""
 	flag.StringVar(&addr, "l", ":8080", "listen address")
 	flag.StringVar(&css, "css", "", "custom css file")
 	flag.StringVar(&script, "js", "", "custom script file")
+	flag.StringVar(&module, "module", "", "custom module file")
 	flag.Parse()
 	if flag.NArg() < 1 {
 		flag.Usage()
@@ -59,6 +61,11 @@ func main() {
 	if len(script) > 0 {
 		http.HandleFunc("/user.js", func(w http.ResponseWriter, r *http.Request) {
 			http.ServeFile(w, r, script)
+		})
+	}
+	if len(module) > 0 {
+		http.HandleFunc("/module.js", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, module)
 		})
 	}
 	http.HandleFunc("/content.md", func(w http.ResponseWriter, r *http.Request) {
