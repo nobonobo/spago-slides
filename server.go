@@ -9,15 +9,12 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"go.pyspa.org/brbundle/brhttp"
-	"go.pyspa.org/brbundle/websupport"
 )
 
 //go:generate sh -c "cd frontend && spago deploy ../dist"
 //go:generate cp -Rf frontend/assets dist/
 //go:generate cp -f frontend/index.html dist/
-//go:generate brbundle embedded dist
+//go:generate broccoli -src dist -quality 9
 
 func init() {
 	flag.Usage = func() {
@@ -27,6 +24,10 @@ func init() {
 }
 
 func main() {
+	br.Walk("dist", func(p string, info os.FileInfo, err error) error {
+		log.Println(p, err)
+		return nil
+	})
 	addr := ":8080"
 	css := ""
 	script := ""
@@ -50,8 +51,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	option := websupport.InitOption(nil)
-	brfs := brhttp.Mount()
 	osfs := http.FileServer(http.Dir("."))
 	if len(css) > 0 {
 		http.HandleFunc("/user.css", func(w http.ResponseWriter, r *http.Request) {
@@ -73,14 +72,21 @@ func main() {
 	})
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		p := filepath.Join(pwd, strings.TrimLeft(r.URL.Path, "/"))
-		_, err := os.Stat(p)
-		if os.IsExist(err) {
+		if _, err := os.Stat(p); os.IsExist(err) {
 			http.ServeFile(w, r, p)
 			return
 		}
-		_, found, _ := websupport.FindFile(r.URL.Path, option)
-		if found {
-			brfs.ServeHTTP(w, r)
+		p = strings.Join(
+			[]string{"dist", strings.TrimLeft(r.URL.Path, "/")},
+			"/",
+		)
+		if strings.HasSuffix(p, "/") {
+			p += "index.html"
+		}
+		log.Println("before:", p)
+		if info, _ := br.Stat(p); info != nil {
+			log.Println("after:", p)
+			br.Serve("dist").ServeHTTP(w, r)
 			return
 		}
 		osfs.ServeHTTP(w, r)

@@ -131,27 +131,30 @@ func loadContent() []spago.Component {
 	if err != nil {
 		log.Print(err)
 	}
-	return parseMarkdown(content.String())
+	slides := parseMarkdown(content.String())
+	maxPage = len(slides)
+	return slides
 }
 
 func main() {
-	top := &slide.Slides{
-		Slides: loadContent(),
-	}
-	maxPage = len(top.Slides)
-	spago.RenderBody(top)
-	dispatcher.Register(actions.PrevStep, prevAction)
-	dispatcher.Register(actions.NextStep, nextAction)
-	dispatcher.Register(actions.ReLoad, func(args ...interface{}) {
-		log.Println("reloading...")
-		top.Slides = loadContent()
+	go func() {
+		top := &slide.Slides{
+			Slides: loadContent(),
+		}
 		spago.RenderBody(top)
-	})
-	currentPage = getCurrentPage()
-	location.Set("hash", "")
-	setCurrentPage(currentPage)
-	log.Println("currentPage:", currentPage)
-	jsutil.Bind(js.Global(), "keydown", keyHandler)
-	log.Println("load completed")
+		dispatcher.Register(actions.PrevStep, prevAction)
+		dispatcher.Register(actions.NextStep, nextAction)
+		dispatcher.Register(actions.ReLoad, func(args ...interface{}) {
+			log.Println("reloading...")
+			top.Slides = loadContent()
+			spago.RenderBody(top)
+		})
+		currentPage = getCurrentPage()
+		location.Set("hash", "")
+		setCurrentPage(currentPage)
+		log.Println("currentPage:", currentPage)
+		jsutil.Bind(js.Global(), "keydown", keyHandler)
+		log.Println("load completed")
+	}()
 	select {}
 }
